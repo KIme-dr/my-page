@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>唐小仙女专属</title>
+<style>
+/* ============ 基础重置 ============ */
+* { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+html { -webkit-text-size-adjust:100%; }
+body {
+  font-family:"PingFang SC","Microsoft YaHei","Hiragino Sans GB",sans-serif;
+  background:linear-gradient(165deg,#FFF4F7 0%,#FFE9F0 55%,#FFF8F2 100%);
+  background-attachment:fixed;
+  color:#6B5B64;
+  min-height:100vh;
+  overflow-x:hidden;
+  display:flex;
+  justify-content:center;
+  touch-action:manipulation;
+}
+
+/* ============ 应用容器 ============ */
+.app {
+  position:relative; z-index:2;
+  width:100%; max-width:420px; min-height:100vh;
+  padding:24px 20px 40px;
+  display:flex; flex-direction:column;
+}
+
+/* ============ 页面切换 ============ */
+.page { display:none; flex:1; flex-direction:column; }
+.page.active { display:flex; animation:pageIn .3s ease; }
+@keyframes pageIn {
+  from { opacity:0; transform:translateY(14px); }
+  to   { opacity:1; transform:none; }
+}
+
+/* ============ 通用按钮 ============ */
+.btn {
+  border:none; cursor:pointer; border-radius:16px;
+  font-family:inherit; font-size:16px; font-weight:600;
+  padding:14px 20px; width:100%;
+  transition:transform .3s, box-shadow .3s, background .3s, color .3s, left .3s, top .3s;
+}
+.btn:active { transform:scale(.97); }
+.btn-primary {
+  color:#fff;
+  background:linear-gradient(120deg,#FF9EBB,#FF7DA0);
+  box-shadow:0 8px 22px rgba(255,125,160,.32);
+}
+.btn-ghost {
+  background:rgba(255,255,255,.88); color:#FF7DA0;
+  border:2px solid #FFC4D4;
+}
+
+/* ============ 漂浮爱心背景 ============ */
+.float-hearts { position:fixed; top:0; left:0; width:100%; height:100%; pointer-events:none; z-index:5; overflow:hidden; }
+.float-hearts span {
+  position:absolute; bottom:-40px; font-size:18px; opacity:0;
+  animation:heartUp linear infinite;
+}
+@keyframes heartUp {
+  0%   { transform:translateY(0) rotate(-8deg) scale(.8); opacity:0; }
+  12%  { opacity:.7; }
+  85%  { opacity:.4; }
+  100% { transform:translateY(-115vh) rotate(10deg) scale(1.15); opacity:0; }
+}
+
+/* ============ 邀约主页 ============ */
+#pageHome { align-items:center; justify-content:center; text-align:center; }
+.heart-badge {
+  width:104px; height:104px; border-radius:50%;
+  background:linear-gradient(135deg,#FFE3EC,#FFF6F0);
+  display:flex; align-items:center; justify-content:center;
+  font-size:52px; margin:0 auto 26px; position:relative;
+  box-shadow:0 10px 28px rgba(255,125,160,.22);
+  animation:pulse 2.4s ease-in-out infinite;
+}
+@keyframes pulse {
+  0%,100% { transform:scale(1); }
+  50%     { transform:scale(1.07); }
+}
+.heart-badge .mini {
+  position:absolute; font-size:16px;
+}
+.heart-badge .m1 { top:-4px; right:6px; animation:floaty 2.2s ease-in-out infinite; }
+.heart-badge .m2 { bottom:2px; left:-6px; animation:floaty 2.8s ease-in-out infinite .7s; }
+@keyframes floaty {
+  0%,100% { transform:translateY(0); }
+  50%     { transform:translateY(-6px); }
+}
+.home-title {
+  font-size:29px; font-weight:700; color:#E85D83;
+  margin-bottom:16px; letter-spacing:1px;
+}
+.home-copy {
+  font-size:15px; color:#A38B97; line-height:1.9;
+  margin-bottom:36px;
+}
+.home-actions {
+  width:100%; max-width:300px;
+  display:flex; flex-direction:column; gap:12px;
+}
+.no-placeholder { display:none; }
+.helper-text {
+  margin-top:14px; font-size:12.5px; color:#C9A5B3;
+  opacity:0; transform:translateY(6px);
+  transition:opacity .3s, transform .3s;
+}
+.helper-text.show { opacity:1; transform:none; }
+
+/* 逃跑按钮 */
+#btnNo.fleeing {
+  position:fixed; z-index:60;
+  width:280px; max-width:calc(100vw - 24px);
+  transition:left .3s ease, top .3s ease, background .3s, box-shadow .3s;
+}
+
+/* ============ 约会选择页 ============ */
+.step-indicator {
+  display:flex; align-items:center; justify-content:center;
+  gap:8px; margin-bottom:20px;
+}
+.step-dot {
+  width:10px; height:10px; border-radius:50%;
+  background:#F3C9D8;
+  transition:background .3s, transform .3s;
+}
+.step-dot.active { background:#FF7DA0; transform:scale(1.3); }
+.step-dot.done   { background:#FFB3C7; }
+.step-line { width:36px; height:2px; border-radius:2px; background:#F3C9D8; }
+.back-link {
+  display:block; margin:14px auto 0;
+  background:none; border:none; cursor:pointer;
+  font-family:inherit; font-size:14px; color:#C97190; font-weight:600;
+  transition:color .3s, transform .3s;
+}
+.back-link:active { transform:scale(.95); }
+.select-head {
+  text-align:center; margin-bottom:22px;
+}
+.select-head h2 { font-size:22px; font-weight:700; color:#E85D83; margin-bottom:8px; }
+.select-head p  { font-size:13px; color:#B49AA6; }
+.cards { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+.card {
+  position:relative;
+  background:rgba(255,255,255,.9);
+  border:2px solid transparent; border-radius:16px;
+  padding:14px 10px; cursor:pointer;
+  font-family:inherit; font-size:14px; color:#6B5B64;
+  text-align:center; line-height:1.5;
+  box-shadow:0 4px 14px rgba(255,125,160,.08);
+  transition:transform .3s, border-color .3s, background .3s, box-shadow .3s;
+}
+.card:active { transform:scale(.97); }
+.card .card-emoji { display:block; font-size:26px; margin-bottom:6px; }
+.card .card-check {
+  position:absolute; top:8px; right:8px;
+  width:20px; height:20px; border-radius:50%;
+  background:linear-gradient(120deg,#FF9EBB,#FF7DA0); color:#fff;
+  font-size:12px; font-weight:700;
+  display:flex; align-items:center; justify-content:center;
+  opacity:0; transform:scale(.4);
+  transition:opacity .3s, transform .3s;
+}
+.card.selected {
+  border-color:#FF7DA0;
+  background:linear-gradient(120deg,#FFF0F5,#FFE9EF);
+  transform:scale(1.03);
+  box-shadow:0 8px 22px rgba(255,125,160,.2);
+}
+.card.selected .card-check { opacity:1; transform:scale(1); }
+.confirm-wrap {
+  margin-top:8px;
+}
+.confirm-btn {
+  opacity:0; transform:translateY(10px); pointer-events:none;
+  transition:opacity .3s, transform .3s;
+}
+.confirm-btn.show { opacity:1; transform:none; pointer-events:auto; }
+
+/* ============ 祝福语结果页 ============ */
+#pageBless { text-align:center; padding-top:10px; }
+.bless-heart { font-size:64px; line-height:1; margin-bottom:14px; animation:popIn .5s ease; }
+@keyframes popIn {
+  0%   { transform:scale(.3); opacity:0; }
+  70%  { transform:scale(1.18); }
+  100% { transform:scale(1); opacity:1; }
+}
+.bless-title { font-size:24px; font-weight:700; color:#E85D83; margin-bottom:18px; }
+.summary-box {
+  background:rgba(255,255,255,.9); border-radius:16px;
+  padding:18px; margin-bottom:16px; text-align:left;
+  box-shadow:0 6px 18px rgba(255,125,160,.1);
+}
+.summary-row {
+  display:flex; align-items:center; gap:10px;
+  padding:10px 0; font-size:15px; color:#6B5B64;
+}
+.summary-row + .summary-row { border-top:1px dashed #FFDCE7; }
+.summary-row .s-emoji { font-size:22px; }
+.summary-row .s-label { color:#C97190; font-weight:700; flex:none; }
+.bless-copy {
+  background:linear-gradient(120deg,rgba(255,158,187,.15),rgba(255,224,180,.15));
+  border-radius:16px; padding:18px;
+  font-size:15px; line-height:1.9; color:#8A5E6E;
+  margin-bottom:32px;
+}
+.bless-actions { margin-top:auto; }
+</style>
+</head>
+<body>
+
+<div class="float-hearts" id="floatHearts"></div>
+
+<div class="app">
+
+  <!-- ============ 邀约主页 ============ -->
+  <section class="page active" id="pageHome">
+    <div class="heart-badge">
+      💗<span class="mini m1">💖</span><span class="mini m2">✨</span>
+    </div>
+    <h1 class="home-title">唐小仙女专属</h1>
+    <p class="home-copy">想和我去约会吗？<br>春天很好，夏天很甜，秋天温柔，冬天浪漫<br>但都不如——和你一起的每一天 💕</p>
+    <div class="home-actions">
+      <button class="btn btn-primary" id="btnYes">我愿意 ❤</button>
+      <button class="btn btn-ghost" id="btnNo">再考虑一下嘛🥺</button>
+      <div class="no-placeholder" id="noPh"></div>
+    </div>
+    <p class="helper-text" id="helper">看来“不要”也不太舍得被你点到呢…</p>
+  </section>
+
+  <!-- ============ 美食选择页（第 1 步） ============ -->
+  <section class="page" id="pageFood">
+    <div class="step-indicator">
+      <span class="step-dot active"></span>
+      <span class="step-line"></span>
+      <span class="step-dot"></span>
+    </div>
+    <div class="select-head">
+      <h2>🍽️ 先选想吃的</h2>
+      <p>第 1 步 · 共 2 步</p>
+    </div>
+    <div class="cards" id="foodCards"></div>
+    <div class="confirm-wrap">
+      <button class="btn btn-primary confirm-btn" id="nextBtn">下一步：选游玩 →</button>
+    </div>
+  </section>
+
+  <!-- ============ 游玩选择页（第 2 步） ============ -->
+  <section class="page" id="pagePlay">
+    <div class="step-indicator">
+      <span class="step-dot done"></span>
+      <span class="step-line"></span>
+      <span class="step-dot active"></span>
+    </div>
+    <div class="select-head">
+      <h2>🎡 再选去哪儿玩</h2>
+      <p>第 2 步 · 共 2 步</p>
+    </div>
+    <div class="cards" id="playCards"></div>
+    <div class="confirm-wrap">
+      <button class="btn btn-primary confirm-btn" id="confirmBtn">💌 确认约会方案</button>
+    </div>
+    <button class="back-link" id="backFoodBtn">← 上一步：改吃的</button>
+  </section>
+
+  <!-- ============ 祝福语结果页 ============ -->
+  <section class="page" id="pageBless">
+    <div class="bless-heart">💖</div>
+    <h2 class="bless-title">约会约定成功！</h2>
+    <div class="summary-box" id="summaryBox"></div>
+    <div class="bless-copy">
+      亲爱的，谢谢你选择了我。愿这一餐的香气、这一程的风景，<br>
+      都成为我们故事里最甜的一页。期待与你共度的这一天 💕
+    </div>
+    <div class="bless-actions">
+      <button class="btn btn-ghost" id="restartBtn">🔄 重新再来</button>
+    </div>
+  </section>
+
+</div>
+
+<script>
+/* ================= 数据 ================= */
+var FOODS = [
+  { e:"🍲", t:"火锅" },
+  { e:"🍣", t:"日料" },
+  { e:"🍝", t:"意面" },
+  { e:"🍰", t:"甜品下午茶" },
+  { e:"🍢", t:"烧烤" },
+  { e:"🦞", t:"海鲜大餐" },
+  { e:"🥘", t:"家常小馆" },
+  { e:"🍜", t:"拉面" }
+];
+var PLAYS = [
+  { e:"🎬", t:"一起看电影" },
+  { e:"🎡", t:"游乐园" },
+  { e:"🌳", t:"公园散步" },
+  { e:"🎤", t:"K歌" },
+  { e:"🎨", t:"逛艺术展" },
+  { e:"🐱", t:"猫咖撸猫" },
+  { e:"🧩", t:"密室逃脱" },
+  { e:"🏞️", t:"近郊踏青" }
+];
+
+var selFood = -1, selPlay = -1;
+
+function $(id) { return document.getElementById(id); }
+
+/* ================= 页面切换 ================= */
+function switchPage(id) {
+  var pages = document.querySelectorAll(".page");
+  for (var i = 0; i < pages.length; i++) pages[i].classList.remove("active");
+  $(id).classList.add("active");
+  window.scrollTo(0, 0);
+}
+
+/* ================= 逃跑按钮 ================= */
+var NO_TEXTS = [
+  "再考虑一下嘛🥺",
+  "真的不要嘛🥹",
+  "你舍得吗？🥺",
+  "再想想嘛…💭",
+  "求求你啦🥺",
+  "好伤心呜呜😢",
+  "哼，点不到我的~😝",
+  "别追啦，选我愿意吧❤"
+];
+var noBtn = $("btnNo");
+var noLevel = 0;
+
+function flee() {
+  $("helper").classList.add("show");
+
+  // 每次点击：按钮逐渐变小 + 文案切换
+  noLevel++;
+  var scale = Math.max(0.5, 1 - noLevel * 0.08);
+  noBtn.style.transform = "scale(" + scale + ")";
+  noBtn.textContent = NO_TEXTS[Math.min(noLevel - 1, NO_TEXTS.length - 1)];
+
+  if (!noBtn.classList.contains("fleeing")) {
+    var r = noBtn.getBoundingClientRect();
+    noBtn.classList.add("fleeing");
+    noBtn.style.left = r.left + "px";
+    noBtn.style.top = r.top + "px";
+    $("noPh").style.display = "block";
+    $("noPh").style.height = r.height + "px";
+  }
+
+  var bw = noBtn.offsetWidth, bh = noBtn.offsetHeight;
+  var m = 12;
+  var maxX = window.innerWidth - bw - m;
+  var maxY = window.innerHeight - bh - m;
+  var x = m + Math.random() * Math.max(maxX - m, 0);
+  var y = m + Math.random() * Math.max(maxY - m, 0);
+
+  // 避开「我愿意」按钮区域，防止误点
+  var yesR = $("btnYes").getBoundingClientRect();
+  for (var i = 0; i < 12; i++) {
+    var overlap = !(x + bw < yesR.left || x > yesR.right || y + bh < yesR.top || y > yesR.bottom);
+    if (!overlap) break;
+    x = m + Math.random() * Math.max(maxX - m, 0);
+    y = m + Math.random() * Math.max(maxY - m, 0);
+  }
+
+  noBtn.style.left = x + "px";
+  noBtn.style.top = y + "px";
+}
+noBtn.addEventListener("click", function (e) {                 // 点击才触发：逃跑 + 变小 + 换文案
+  e.preventDefault();
+  flee();
+});
+
+function resetNoBtn() {
+  noBtn.classList.remove("fleeing");
+  noBtn.style.left = ""; noBtn.style.top = "";
+  noBtn.style.transform = "";
+  noLevel = 0;
+  noBtn.textContent = NO_TEXTS[0];
+  $("noPh").style.display = "none";
+  $("noPh").style.height = "";
+}
+
+/* ================= 约会选择页 ================= */
+function renderCards(container, list, stateKey, group) {
+  var html = "";
+  for (var i = 0; i < list.length; i++) {
+    html += '<button class="card' + (stateKey === i ? " selected" : "") + '" data-i="' + i + '">' +
+      '<span class="card-emoji">' + list[i].e + "</span>" +
+      list[i].t +
+      '<span class="card-check">✓</span></button>';
+  }
+  container.innerHTML = html;
+  container.querySelectorAll(".card").forEach(function (card) {
+    card.addEventListener("click", function () {
+      var idx = Number(card.getAttribute("data-i"));
+      if (group === "food") selFood = idx; else selPlay = idx;
+      renderCards(container, list, group === "food" ? selFood : selPlay, group);
+      updateNext();
+      updateConfirm();
+    });
+  });
+}
+
+function updateConfirm() {
+  $("confirmBtn").classList.toggle("show", selFood >= 0 && selPlay >= 0);
+}
+
+function updateNext() {
+  $("nextBtn").classList.toggle("show", selFood >= 0);
+}
+
+function initFoodPage() {
+  renderCards($("foodCards"), FOODS, selFood, "food");
+  updateNext();
+}
+
+function initPlayPage() {
+  renderCards($("playCards"), PLAYS, selPlay, "play");
+  updateConfirm();
+}
+
+/* ================= 祝福页 ================= */
+function showBless() {
+  var f = FOODS[selFood], p = PLAYS[selPlay];
+  $("summaryBox").innerHTML =
+    '<div class="summary-row"><span class="s-emoji">' + f.e + '</span>' +
+    '<span class="s-label">美食之约</span><span>' + f.t + '</span></div>' +
+    '<div class="summary-row"><span class="s-emoji">' + p.e + '</span>' +
+    '<span class="s-label">游玩之约</span><span>' + p.t + '</span></div>';
+  switchPage("pageBless");
+  spawnHearts(true);
+}
+
+/* ================= 漂浮爱心 ================= */
+var HEART_CHARS = ["❤", "💗", "💖", "💕", "🌸"];
+function spawnHearts(more) {
+  var cont = $("floatHearts");
+  cont.innerHTML = "";
+  var n = more ? 18 : 6;
+  for (var i = 0; i < n; i++) {
+    var s = document.createElement("span");
+    s.textContent = HEART_CHARS[i % HEART_CHARS.length];
+    s.style.left = (Math.random() * 100) + "%";
+    s.style.fontSize = (12 + Math.random() * 16) + "px";
+    s.style.animationDuration = (6 + Math.random() * 7) + "s";
+    s.style.animationDelay = (Math.random() * 6) + "s";
+    cont.appendChild(s);
+  }
+}
+
+/* ================= 事件绑定 ================= */
+$("btnYes").addEventListener("click", function () {
+  initFoodPage();
+  switchPage("pageFood");
+});
+$("nextBtn").addEventListener("click", function () {
+  initPlayPage();
+  switchPage("pagePlay");
+});
+$("backFoodBtn").addEventListener("click", function () {
+  initFoodPage();
+  switchPage("pageFood");
+});
+$("confirmBtn").addEventListener("click", showBless);
+$("restartBtn").addEventListener("click", function () {
+  selFood = -1; selPlay = -1;
+  resetNoBtn();
+  $("helper").classList.remove("show");
+  spawnHearts(false);
+  switchPage("pageHome");
+});
+
+spawnHearts(false);
+</script>
+</body>
+</html>
